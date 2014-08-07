@@ -77,8 +77,8 @@ class DbBackupCommand extends BaseCommand
      * @throws \BigName\BackupManager\Config\ConfigNotFoundForConnection
      * @return mixed
      */
-	public function fire()
-	{
+    public function fire()
+    {
         if ($this->isMissingArguments()) {
             $this->displayMissingArguments();
             $this->promptForMissingArgumentValues();
@@ -99,9 +99,9 @@ class DbBackupCommand extends BaseCommand
             $this->option('database'),
             $this->option('compression'),
             $this->option('destination'),
-            $root.$this->option('destinationPath')
+            $root . $this->option('destinationPath')
         ));
-	}
+    }
 
     /**
      * @return bool
@@ -109,7 +109,7 @@ class DbBackupCommand extends BaseCommand
     private function isMissingArguments()
     {
         foreach ($this->required as $argument) {
-            if ( ! $this->option($argument)) {
+            if (!$this->option($argument)) {
                 $this->missingArguments[] = $argument;
             }
         }
@@ -192,12 +192,12 @@ class DbBackupCommand extends BaseCommand
         $this->info(sprintf('Do you want to create a backup of <comment>%s</comment>, store it on <comment>%s</comment> at <comment>%s</comment> and compress it to <comment>%s</comment>?',
             $this->option('database'),
             $this->option('destination'),
-            $root.$this->option('destinationPath'),
+            $root . $this->option('destinationPath'),
             $this->option('compression')
         ));
         $this->line('');
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if ( ! $confirmation) {
+        if (!$confirmation) {
             $this->reaskArguments();
         }
     }
@@ -227,6 +227,6 @@ class DbBackupCommand extends BaseCommand
             ['destination', null, InputOption::VALUE_OPTIONAL, 'Destination configuration name', null],
             ['destinationPath', null, InputOption::VALUE_OPTIONAL, 'File destination path', null],
             ['compression', null, InputOption::VALUE_OPTIONAL, 'Compression type', null],
-		];
-	}
+        ];
+    }
 }

@@ -10,12 +10,12 @@ use BigName\BackupManager\ShellProcessing\ShellProcessor;
 
 class BackupManagerLaravelServiceProvider extends ServiceProvider
 {
-	/**
-	 * Indicates if loading of the provider is deferred.
-	 *
-	 * @var bool
-	 */
-	protected $defer = true;
+    /**
+     * Indicates if loading of the provider is deferred.
+     *
+     * @var bool
+     */
+    protected $defer = true;
 
     /**
      * Bootstrap the application events.
@@ -24,22 +24,22 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->package('heybigname/backup-manager-laravel', 'backup-manager-laravel', __DIR__.'/../../..');
+        $this->package('heybigname/backup-manager-laravel', 'backup-manager-laravel', __DIR__ . '/../../..');
     }
 
-	/**
-	 * Register the service provider.
-	 *
-	 * @return void
-	 */
-	public function register()
-	{
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
+    public function register()
+    {
         $this->registerFilesystemProvider();
         $this->registerDatabaseProvider();
         $this->registerCompressorProvider();
         $this->registerShellProcessor();
         $this->registerArtisanCommands();
-	}
+    }
 
     /**
      * Register the filesystem provider.
@@ -48,7 +48,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerFilesystemProvider()
     {
-        $this->app->bind('BigName\BackupManager\Filesystems\FilesystemProvider', function($app) {
+        $this->app->bind('BigName\BackupManager\Filesystems\FilesystemProvider', function ($app) {
             $provider = new Filesystems\FilesystemProvider(new Config($app['config']['backup-manager::storage']));
             $provider->add(new Filesystems\Awss3Filesystem);
             $provider->add(new Filesystems\DropboxFilesystem);
@@ -67,7 +67,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerDatabaseProvider()
     {
-        $this->app->bind('BigName\BackupManager\Databases\DatabaseProvider', function($app) {
+        $this->app->bind('BigName\BackupManager\Databases\DatabaseProvider', function ($app) {
             $provider = new Databases\DatabaseProvider($this->getDatabaseConfig($app['config']['database.connections']));
             $provider->add(new Databases\MysqlDatabase);
             $provider->add(new Databases\PostgresqlDatabase);
@@ -82,7 +82,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerCompressorProvider()
     {
-        $this->app->bind('BigName\BackupManager\Compressors\CompressorProvider', function() {
+        $this->app->bind('BigName\BackupManager\Compressors\CompressorProvider', function () {
             $provider = new Compressors\CompressorProvider;
             $provider->add(new Compressors\GzipCompressor);
             $provider->add(new Compressors\NullCompressor);
@@ -97,7 +97,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerShellProcessor()
     {
-        $this->app->bind('BigName\BackupManager\ShellProcessing\ShellProcessor', function() {
+        $this->app->bind('BigName\BackupManager\ShellProcessing\ShellProcessor', function () {
             return new ShellProcessor(new Process(''));
         });
     }
@@ -116,25 +116,25 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
         ]);
     }
 
-	/**
-	 * Get the services provided by the provider.
-	 *
-	 * @return array
-	 */
-	public function provides()
-	{
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
         return [
             'BigName\BackupManager\Filesystems\FilesystemProvider',
             'BigName\BackupManager\Compressors\CompressorProvider',
             'BigName\BackupManager\Databases\DatabaseProvider',
             'BigName\BackupManager\ShellProcessing\ShellProcessor',
         ];
-	}
+    }
 
     private function getDatabaseConfig($connections)
     {
-        $mapped = array_map(function($connection) {
-            if ( ! in_array($connection['driver'], ['mysql', 'pgsql'])) {
+        $mapped = array_map(function ($connection) {
+            if (!in_array($connection['driver'], ['mysql', 'pgsql'])) {
                 return;
             }
 

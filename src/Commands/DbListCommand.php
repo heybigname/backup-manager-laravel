@@ -83,7 +83,7 @@ class DbListCommand extends BaseCommand
     private function isMissingArguments()
     {
         foreach ($this->required as $argument) {
-            if ( ! $this->option($argument)) {
+            if (!$this->option($argument)) {
                 $this->missingArguments[] = $argument;
             }
         }
@@ -140,12 +140,12 @@ class DbListCommand extends BaseCommand
         $root = $this->filesystems->getConfig($this->option('source'), 'root');
         $this->info('Just to be sure...');
         $this->info(sprintf('Do you want to list files from <comment>%s</comment> on <comment>%s</comment>?',
-            $root.$this->option('path'),
+            $root . $this->option('path'),
             $this->option('source')
         ));
         $this->line('');
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if ( ! $confirmation) {
+        if (!$confirmation) {
             $this->reaskArguments();
         }
     }

@@ -85,7 +85,7 @@ class DbRestoreCommand extends BaseCommand
         $this->line('');
         $root = $this->filesystems->getConfig($this->option('source'), 'root');
         $this->info(sprintf('Successfully restored <comment>%s</comment> from <comment>%s</comment> to database <comment>%s</comment>.',
-            $root.$this->option('sourcePath'),
+            $root . $this->option('sourcePath'),
             $this->option('source'),
             $this->option('database')
         ));
@@ -97,11 +97,11 @@ class DbRestoreCommand extends BaseCommand
     private function isMissingArguments()
     {
         foreach ($this->required as $argument) {
-            if ( ! $this->option($argument)) {
+            if (!$this->option($argument)) {
                 $this->missingArguments[] = $argument;
             }
         }
-        return (bool) $this->missingArguments;
+        return (bool)$this->missingArguments;
     }
 
     /**
@@ -208,14 +208,14 @@ class DbRestoreCommand extends BaseCommand
         $root = $this->filesystems->getConfig($this->option('source'), 'root');
         $this->info('Just to be sure...');
         $this->info(sprintf('Do you want to restore the backup <comment>%s</comment> from <comment>%s</comment> to database <comment>%s</comment> and decompress it from <comment>%s</comment>?',
-            $root.$this->option('sourcePath'),
+            $root . $this->option('sourcePath'),
             $this->option('source'),
             $this->option('database'),
             $this->option('compression')
         ));
         $this->line('');
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if ( ! $confirmation) {
+        if (!$confirmation) {
             $this->reaskArguments();
         }
     }
