@@ -131,11 +131,19 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
         ];
     }
 
+    /**
+     * @param  array $connections
+     * @return Config
+     */
     private function getDatabaseConfig($connections)
     {
         return new Config($this->mapLaravelConnections($connections));
     }
 
+    /**
+     * @param  array $connections
+     * @return array
+     */
     private function mapLaravelConnections(array $connections)
     {
         return array_map(function($connection) {
@@ -158,11 +166,19 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
         }, $connections);
     }
 
+    /**
+     * @param  string $driver
+     * @return bool
+     */
     private function isSupportedDriver($driver)
     {
         return in_array($driver, ['mysql', 'pgsql']);
     }
 
+    /**
+     * @param  string $driver
+     * @return string
+     */
     private function getStandardPortForDriver($driver)
     {
         if ($driver == 'mysql')
