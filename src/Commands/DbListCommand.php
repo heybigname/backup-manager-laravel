@@ -1,9 +1,10 @@
 <?php  namespace BigName\BackupManagerLaravel\Commands;
 
+use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use BigName\BackupManager\Filesystems\FilesystemProvider;
 
-class DbListCommand extends BaseCommand
+class DbListCommand extends Command
 {
     /**
      * The console command name.
@@ -20,7 +21,7 @@ class DbListCommand extends BaseCommand
     protected $description = 'List contents of a backup storage destination.';
 
     /**
-     * @var \BigName\BackupManager\Filesystems\FilesystemProvider
+     * @var FilesystemProvider
      */
     private $filesystems;
 
@@ -47,11 +48,6 @@ class DbListCommand extends BaseCommand
 
     /**
      * Execute the console command.
-     *
-     * @throws \LogicException
-     * @throws \BigName\BackupManager\Filesystems\FilesystemTypeNotSupported
-     * @throws \BigName\BackupManager\Config\ConfigFieldNotFound
-     * @throws \BigName\BackupManager\Config\ConfigNotFoundForConnection
      * @return void
      */
     public function fire()
@@ -62,18 +58,11 @@ class DbListCommand extends BaseCommand
             $this->validateArguments();
         }
 
-        $filesystem = $this->filesystems->get($this->option('source'));
-        $contents = $filesystem->listContents($this->option('path'));
+        $contents = $this->getPathContents();
         $rows = [];
-        foreach ($contents as $file) {
-            if ($file['type'] == 'dir') continue;
-            $rows[] = [
-                $file['basename'],
-                $file['extension'],
-                $this->formatBytes($file['size']),
-                date('D j Y  H:i:s', $file['timestamp'])
-            ];
-        }
+        foreach ($contents as $file)
+            $rows[] = $this->getTableRow($file);
+
         $this->table(['Name', 'Extension', 'Size', 'Created'], $rows);
     }
 
@@ -83,9 +72,8 @@ class DbListCommand extends BaseCommand
     private function isMissingArguments()
     {
         foreach ($this->required as $argument) {
-            if (!$this->option($argument)) {
+            if ( ! $this->option($argument))
                 $this->missingArguments[] = $argument;
-            }
         }
         return isset($this->missingArguments);
     }
@@ -107,11 +95,11 @@ class DbListCommand extends BaseCommand
     private function promptForMissingArgumentValues()
     {
         foreach ($this->missingArguments as $argument) {
-            if ($argument == 'source') {
+            if ($argument == 'source')
                 $this->askSource();
-            } elseif ($argument == 'path') {
+            elseif ($argument == 'path')
                 $this->askPath();
-            }
+
             $this->line('');
         }
     }
@@ -121,7 +109,7 @@ class DbListCommand extends BaseCommand
         $providers = $this->filesystems->getAvailableProviders();
         $formatted = implode(', ', $providers);
         $this->info("Available sources: <comment>{$formatted}</comment>");
-        $source = $this->autocomplete("From which source do you want to list?", $providers);
+        $source = $this->askWithCompletion("From which source do you want to list?", $providers);
         $this->input->setOption('source', $source);
     }
 
@@ -145,9 +133,8 @@ class DbListCommand extends BaseCommand
         ));
         $this->line('');
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if (!$confirmation) {
-            $this->reaskArguments();
-        }
+        if ( ! $confirmation)
+            $this->reAskArguments();
     }
 
     /**
@@ -155,7 +142,7 @@ class DbListCommand extends BaseCommand
      *
      * @return void
      */
-    private function reaskArguments()
+    private function reAskArguments()
     {
         $this->line('');
         $this->info('Answers have been reset and re-asking questions.');
@@ -176,6 +163,24 @@ class DbListCommand extends BaseCommand
         ];
     }
 
+    private function getTableRow($file)
+    {
+        if ($file['type'] == 'dir') {
+            return [
+                "{$file['basename']}/",
+                '',
+                '0 B',
+                date('D j Y  H:i:s', $file['timestamp'])
+            ];
+        }
+        return [
+            $file['basename'],
+            $file['extension'],
+            $this->formatBytes($file['size']),
+            date('D j Y  H:i:s', $file['timestamp'])
+        ];
+    }
+
     private function formatBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -183,5 +188,11 @@ class DbListCommand extends BaseCommand
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
         return round($bytes, $precision) . ' ' . $units[$pow];
+    }
+
+    private function getPathContents()
+    {
+        $filesystem = $this->filesystems->get($this->option('source'));
+        return $filesystem->listContents($this->option('path'));
     }
 } 

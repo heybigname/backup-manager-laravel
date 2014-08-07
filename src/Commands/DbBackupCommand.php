@@ -1,5 +1,6 @@
 <?php namespace BigName\BackupManagerLaravel\Commands;
 
+use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use BigName\BackupManager\Databases\DatabaseProvider;
 use BigName\BackupManager\Procedures\BackupProcedure;
@@ -7,9 +8,9 @@ use BigName\BackupManager\Filesystems\FilesystemProvider;
 
 /**
  * Class ManagerBackupCommand
- * @package BigName\BackupManager\Integrations\Laravel
+ * @package BigName\BackupManagerLaravel\Commands
  */
-class DbBackupCommand extends BaseCommand
+class DbBackupCommand extends Command
 {
     /**
      * The console command name.
@@ -61,20 +62,14 @@ class DbBackupCommand extends BaseCommand
      */
     public function __construct(BackupProcedure $backupProcedure, DatabaseProvider $databases, FilesystemProvider $filesystems)
     {
+        parent::__construct();
         $this->backupProcedure = $backupProcedure;
         $this->databases = $databases;
         $this->filesystems = $filesystems;
-
-        parent::__construct();
     }
 
     /**
      * Execute the console command.
-     *
-     * @throws \BigName\BackupManager\Filesystems\FilesystemTypeNotSupported
-     * @throws \BigName\BackupManager\Compressors\CompressorTypeNotSupported
-     * @throws \BigName\BackupManager\Databases\DatabaseTypeNotSupported
-     * @throws \BigName\BackupManager\Config\ConfigNotFoundForConnection
      * @return mixed
      */
     public function fire()
@@ -109,9 +104,8 @@ class DbBackupCommand extends BaseCommand
     private function isMissingArguments()
     {
         foreach ($this->required as $argument) {
-            if (!$this->option($argument)) {
+            if ( ! $this->option($argument))
                 $this->missingArguments[] = $argument;
-            }
         }
         return isset($this->missingArguments);
     }
@@ -133,15 +127,15 @@ class DbBackupCommand extends BaseCommand
     private function promptForMissingArgumentValues()
     {
         foreach ($this->missingArguments as $argument) {
-            if ($argument == 'database') {
+            if ($argument == 'database')
                 $this->askDatabase();
-            } elseif ($argument == 'destination') {
+            elseif ($argument == 'destination')
                 $this->askDestination();
-            } elseif ($argument == 'destinationPath') {
+            elseif ($argument == 'destinationPath')
                 $this->askDestinationPath();
-            } elseif ($argument == 'compression') {
+            elseif ($argument == 'compression')
                 $this->askCompression();
-            }
+
             $this->line('');
         }
     }
@@ -151,7 +145,7 @@ class DbBackupCommand extends BaseCommand
         $providers = $this->databases->getAvailableProviders();
         $formatted = implode(', ', $providers);
         $this->info("Available database connections: <comment>{$formatted}</comment>");
-        $database = $this->autocomplete("From which database connection you want to dump?", $providers);
+        $database = $this->askWithCompletion("From which database connection you want to dump?", $providers);
         $this->input->setOption('database', $database);
     }
 
@@ -160,7 +154,7 @@ class DbBackupCommand extends BaseCommand
         $providers = $this->filesystems->getAvailableProviders();
         $formatted = implode(', ', $providers);
         $this->info("Available storage services: <comment>{$formatted}</comment>");
-        $destination = $this->autocomplete("To which storage service you want to save?", $providers);
+        $destination = $this->askWithCompletion("To which storage service you want to save?", $providers);
         $this->input->setOption('destination', $destination);
     }
 
@@ -176,13 +170,11 @@ class DbBackupCommand extends BaseCommand
         $types = ['null', 'gzip'];
         $formatted = implode(', ', $types);
         $this->info("Available compression types: <comment>{$formatted}</comment>");
-        $compression = $this->autocomplete('Which compression type you want to use?', $types);
+        $compression = $this->askWithCompletion('Which compression type you want to use?', $types);
         $this->input->setOption('compression', $compression);
     }
 
     /**
-     * @throws \BigName\BackupManager\Config\ConfigFieldNotFound
-     * @throws \BigName\BackupManager\Config\ConfigNotFoundForConnection
      * @return void
      */
     private function validateArguments()
@@ -197,9 +189,8 @@ class DbBackupCommand extends BaseCommand
         ));
         $this->line('');
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if (!$confirmation) {
-            $this->reaskArguments();
-        }
+        if ( ! $confirmation)
+            $this->reAskArguments();
     }
 
     /**
@@ -207,7 +198,7 @@ class DbBackupCommand extends BaseCommand
      *
      * @return void
      */
-    private function reaskArguments()
+    private function reAskArguments()
     {
         $this->line('');
         $this->info('Answers have been reset and re-asking questions.');

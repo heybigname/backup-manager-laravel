@@ -1,5 +1,6 @@
 {
     "name": "heybigname/backup-manager-laravel",
+    "version": "0.1.0",
     "description": "Laravel integration for Backup Manager",
     "authors": [
         {
@@ -10,12 +11,18 @@
     "require": {
         "php": ">=5.4.0",
         "illuminate/support": "dev-master",
-        "heybigname/backup-manager": "~0.3"
+        "illuminate/console": "~4.2",
+        "heybigname/backup-manager": "0.4.x-dev"
     },
     "autoload": {
         "psr-4": {
             "BigName\\BackupManagerLaravel\\": "src/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1-dev"
+        }
+    }
 }

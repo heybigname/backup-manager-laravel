@@ -97,11 +97,10 @@ class DbRestoreCommand extends BaseCommand
     private function isMissingArguments()
     {
         foreach ($this->required as $argument) {
-            if (!$this->option($argument)) {
+            if ( ! $this->option($argument))
                 $this->missingArguments[] = $argument;
-            }
         }
-        return (bool)$this->missingArguments;
+        return (bool) $this->missingArguments;
     }
 
     /**
@@ -121,15 +120,15 @@ class DbRestoreCommand extends BaseCommand
     private function promptForMissingArgumentValues()
     {
         foreach ($this->missingArguments as $argument) {
-            if ($argument == 'source') {
+            if ($argument == 'source')
                 $this->askSource();
-            } elseif ($argument == 'sourcePath') {
+            elseif ($argument == 'sourcePath')
                 $this->askSourcePath();
-            } elseif ($argument == 'database') {
+            elseif ($argument == 'database')
                 $this->askDatabase();
-            } elseif ($argument == 'compression') {
+            elseif ($argument == 'compression')
                 $this->askCompression();
-            }
+
             $this->line('');
         }
     }
@@ -167,15 +166,9 @@ class DbRestoreCommand extends BaseCommand
         }
 
         $rows = [];
-        foreach ($contents as $file) {
-            if ($file['type'] == 'dir') continue;
-            $rows[] = [
-                $file['basename'],
-                $file['extension'],
-                $this->formatBytes($file['size']),
-                date('D j Y  H:i:s', $file['timestamp'])
-            ];
-        }
+        foreach ($contents as $file)
+            $rows[] = $this->getTableRow($file);
+
         $this->info('Available database dumps:');
         $this->table(['Name', 'Extension', 'Size', 'Created'], $rows);
         $filename = $this->autocomplete("Which database dump do you want to restore?", $files);
@@ -215,9 +208,8 @@ class DbRestoreCommand extends BaseCommand
         ));
         $this->line('');
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if (!$confirmation) {
-            $this->reaskArguments();
-        }
+        if ( ! $confirmation)
+            $this->reAskArguments();
     }
 
     /**
@@ -225,7 +217,7 @@ class DbRestoreCommand extends BaseCommand
      *
      * @return void
      */
-    private function reaskArguments()
+    private function reAskArguments()
     {
         $this->line('');
         $this->info('Answers have been reset and re-asking questions.');
@@ -255,5 +247,23 @@ class DbRestoreCommand extends BaseCommand
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
         return round($bytes, $precision) . ' ' . $units[$pow];
+    }
+
+    private function getTableRow($file)
+    {
+        if ($file['type'] == 'dir') {
+            return [
+                "{$file['basename']}/",
+                '',
+                '0 B',
+                date('D j Y  H:i:s', $file['timestamp'])
+            ];
+        }
+        return [
+            $file['basename'],
+            $file['extension'],
+            $this->formatBytes($file['size']),
+            date('D j Y  H:i:s', $file['timestamp'])
+        ];
     }
 }
