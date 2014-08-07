@@ -48,7 +48,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerFilesystemProvider()
     {
-        $this->app->bind('BigName\BackupManager\Filesystems\FilesystemProvider', function ($app) {
+        $this->app->bind('BigName\BackupManager\Filesystems\FilesystemProvider', function($app) {
             $provider = new Filesystems\FilesystemProvider(new Config($app['config']['backup-manager::storage']));
             $provider->add(new Filesystems\Awss3Filesystem);
             $provider->add(new Filesystems\DropboxFilesystem);
@@ -67,7 +67,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerDatabaseProvider()
     {
-        $this->app->bind('BigName\BackupManager\Databases\DatabaseProvider', function ($app) {
+        $this->app->bind('BigName\BackupManager\Databases\DatabaseProvider', function($app) {
             $provider = new Databases\DatabaseProvider($this->getDatabaseConfig($app['config']['database.connections']));
             $provider->add(new Databases\MysqlDatabase);
             $provider->add(new Databases\PostgresqlDatabase);
@@ -82,7 +82,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerCompressorProvider()
     {
-        $this->app->bind('BigName\BackupManager\Compressors\CompressorProvider', function () {
+        $this->app->bind('BigName\BackupManager\Compressors\CompressorProvider', function() {
             $provider = new Compressors\CompressorProvider;
             $provider->add(new Compressors\GzipCompressor);
             $provider->add(new Compressors\NullCompressor);
@@ -97,8 +97,8 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerShellProcessor()
     {
-        $this->app->bind('BigName\BackupManager\ShellProcessing\ShellProcessor', function () {
-            return new ShellProcessor(new Process(''));
+        $this->app->bind('BigName\BackupManager\ShellProcessing\ShellProcessor', function() {
+            return new ShellProcessor(new Process('', null, null, null, null));
         });
     }
 
@@ -133,20 +133,19 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
 
     private function getDatabaseConfig($connections)
     {
-        $mapped = array_map(function ($connection) {
-            if (!in_array($connection['driver'], ['mysql', 'pgsql'])) {
-                return;
-            }
+        return new Config($this->mapLaravelConnections($connections));
+    }
 
-            if (isset($connection['port'])) {
+    private function mapLaravelConnections(array $connections)
+    {
+        return array_map(function($connection) {
+            if ( ! $this->isSupportedDriver($connection['driver']))
+                return;
+
+            if (isset($connection['port']))
                 $port = $connection['port'];
-            } else {
-                if ($connection['driver'] == 'mysql') {
-                    $port = '3306';
-                } elseif ($connection['driver'] == 'pgsql') {
-                    $port = '5432';
-                }
-            }
+            else
+                $port = $this->getStandardPortForDriver($connection['port']);
 
             return [
                 'type' => $connection['driver'],
@@ -157,6 +156,18 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
                 'database' => $connection['database'],
             ];
         }, $connections);
-        return new Config($mapped);
+    }
+
+    private function isSupportedDriver($driver)
+    {
+        return in_array($driver, ['mysql', 'pgsql']);
+    }
+
+    private function getStandardPortForDriver($driver)
+    {
+        if ($driver == 'mysql')
+            return '3306';
+        elseif ($driver == 'pgsql')
+            return '5432';
     }
 }
