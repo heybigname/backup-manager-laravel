@@ -75,20 +75,9 @@ class DbRestoreCommand extends BaseCommand
         }
 
         $this->info('Downloading and importing backup...');
-        $this->restore->run(
-            $this->option('source'),
-            $this->option('sourcePath'),
-            $this->option('database'),
-            $this->option('compression')
-        );
+        $this->runRestoreProcedure();
 
-        $this->line('');
-        $root = $this->filesystems->getConfig($this->option('source'), 'root');
-        $this->info(sprintf('Successfully restored <comment>%s</comment> from <comment>%s</comment> to database <comment>%s</comment>.',
-            $root . $this->option('sourcePath'),
-            $this->option('source'),
-            $this->option('database')
-        ));
+        $this->showSuccessMessage();
     }
 
     /**
@@ -111,7 +100,7 @@ class DbRestoreCommand extends BaseCommand
         $formatted = implode(', ', $this->missingArguments);
         $this->info("These arguments haven't been filled yet: <comment>{$formatted}</comment>");
         $this->info('The following questions will fill these in for you.');
-        $this->line('');
+        $this->lineBreak();
     }
 
     /**
@@ -129,7 +118,7 @@ class DbRestoreCommand extends BaseCommand
             elseif ($argument == 'compression')
                 $this->askCompression();
 
-            $this->line('');
+            $this->lineBreak();
         }
     }
 
@@ -147,7 +136,7 @@ class DbRestoreCommand extends BaseCommand
         // ask path
         $root = $this->filesystems->getConfig($this->option('source'), 'root');
         $path = $this->ask("From which path do you want to select?<comment> {$root}</comment>");
-        $this->line('');
+        $this->lineBreak();
 
         // ask file
         $filesystem = $this->filesystems->get($this->option('source'));
@@ -206,10 +195,8 @@ class DbRestoreCommand extends BaseCommand
             $this->option('database'),
             $this->option('compression')
         ));
-        $this->line('');
-        $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if ( ! $confirmation)
-            $this->reAskArguments();
+        $this->lineBreak();
+        $this->confirmToProceed();
     }
 
     /**
@@ -219,9 +206,9 @@ class DbRestoreCommand extends BaseCommand
      */
     private function reAskArguments()
     {
-        $this->line('');
+        $this->lineBreak();
         $this->info('Answers have been reset and re-asking questions.');
-        $this->line('');
+        $this->lineBreak();
         $this->promptForMissingArgumentValues();
     }
 
@@ -265,5 +252,38 @@ class DbRestoreCommand extends BaseCommand
             $this->formatBytes($file['size']),
             date('D j Y  H:i:s', $file['timestamp'])
         ];
+    }
+
+    private function lineBreak()
+    {
+        $this->line(PHP_EOL);
+    }
+
+    private function confirmToProceed()
+    {
+        $confirmation = $this->confirm('Are these correct? [Y/n]');
+        if ( ! $confirmation)
+            $this->reAskArguments();
+    }
+
+    private function runRestoreProcedure()
+    {
+        $this->restore->run(
+            $this->option('source'),
+            $this->option('sourcePath'),
+            $this->option('database'),
+            $this->option('compression')
+        );
+    }
+
+    private function showSuccessMessage()
+    {
+        $this->lineBreak();
+        $root = $this->filesystems->getConfig($this->option('source'), 'root');
+        $this->info(sprintf('Successfully restored <comment>%s</comment> from <comment>%s</comment> to database <comment>%s</comment>.',
+            $root . $this->option('sourcePath'),
+            $this->option('source'),
+            $this->option('database')
+        ));
     }
 }

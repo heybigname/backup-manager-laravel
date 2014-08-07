@@ -81,14 +81,24 @@ class DbBackupCommand extends Command
         }
 
         $this->info('Dumping database and uploading...');
+        $this->runBackupProcedure();
+
+        $this->showSuccessMessage();
+    }
+
+    private function runBackupProcedure()
+    {
         $this->backupProcedure->run(
             $this->option('database'),
             $this->option('destination'),
             $this->option('destinationPath'),
             $this->option('compression')
         );
+    }
 
-        $this->line('');
+    private function showSuccessMessage()
+    {
+        $this->lineBreak();
         $root = $this->filesystems->getConfig($this->option('destination'), 'root');
         $this->info(sprintf('Successfully dumped <comment>%s</comment>, compressed with <comment>%s</comment> and store it to <comment>%s</comment> at <comment>%s</comment>',
             $this->option('database'),
@@ -118,7 +128,7 @@ class DbBackupCommand extends Command
         $formatted = implode(', ', $this->missingArguments);
         $this->info("These arguments haven't been filled yet: <comment>{$formatted}</comment>");
         $this->info('The following questions will fill these in for you.');
-        $this->line('');
+        $this->lineBreak();
     }
 
     /**
@@ -136,7 +146,7 @@ class DbBackupCommand extends Command
             elseif ($argument == 'compression')
                 $this->askCompression();
 
-            $this->line('');
+            $this->lineBreak();
         }
     }
 
@@ -187,10 +197,8 @@ class DbBackupCommand extends Command
             $root . $this->option('destinationPath'),
             $this->option('compression')
         ));
-        $this->line('');
-        $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if ( ! $confirmation)
-            $this->reAskArguments();
+        $this->lineBreak();
+        $this->confirmToProceed();
     }
 
     /**
@@ -200,9 +208,9 @@ class DbBackupCommand extends Command
      */
     private function reAskArguments()
     {
-        $this->line('');
+        $this->lineBreak();
         $this->info('Answers have been reset and re-asking questions.');
-        $this->line('');
+        $this->lineBreak();
         $this->promptForMissingArgumentValues();
     }
 
@@ -219,5 +227,17 @@ class DbBackupCommand extends Command
             ['destinationPath', null, InputOption::VALUE_OPTIONAL, 'File destination path', null],
             ['compression', null, InputOption::VALUE_OPTIONAL, 'Compression type', null],
         ];
+    }
+
+    private function lineBreak()
+    {
+        $this->line(PHP_EOL);
+    }
+
+    private function confirmToProceed()
+    {
+        $confirmation = $this->confirm('Are these correct? [Y/n]');
+        if (!$confirmation)
+            $this->reAskArguments();
     }
 }

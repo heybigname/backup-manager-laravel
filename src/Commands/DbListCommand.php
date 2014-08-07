@@ -58,10 +58,14 @@ class DbListCommand extends Command
             $this->validateArguments();
         }
 
-        $contents = $this->getPathContents();
+        $this->showContentsInTable($this->getContentsFromPath());
+    }
+
+    private function showContentsInTable(array $contents)
+    {
         $rows = [];
-        foreach ($contents as $file)
-            $rows[] = $this->getTableRow($file);
+        foreach ($contents as $row)
+            $rows[] = $this->getTableRow($row);
 
         $this->table(['Name', 'Extension', 'Size', 'Created'], $rows);
     }
@@ -86,7 +90,7 @@ class DbListCommand extends Command
         $formatted = implode(', ', $this->missingArguments);
         $this->info("These arguments haven't been filled yet: <comment>{$formatted}</comment>.");
         $this->info('The following questions will fill these in for you.');
-        $this->line('');
+        $this->lineBreak();
     }
 
     /**
@@ -100,7 +104,7 @@ class DbListCommand extends Command
             elseif ($argument == 'path')
                 $this->askPath();
 
-            $this->line('');
+            $this->lineBreak();
         }
     }
 
@@ -131,7 +135,12 @@ class DbListCommand extends Command
             $root . $this->option('path'),
             $this->option('source')
         ));
-        $this->line('');
+        $this->lineBreak();
+        $this->confirmToProceed();
+    }
+
+    private function confirmToProceed()
+    {
         $confirmation = $this->confirm('Are these correct? [Y/n]');
         if ( ! $confirmation)
             $this->reAskArguments();
@@ -144,9 +153,9 @@ class DbListCommand extends Command
      */
     private function reAskArguments()
     {
-        $this->line('');
+        $this->lineBreak();
         $this->info('Answers have been reset and re-asking questions.');
-        $this->line('');
+        $this->lineBreak();
         $this->promptForMissingArgumentValues();
     }
 
@@ -190,9 +199,14 @@ class DbListCommand extends Command
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
 
-    private function getPathContents()
+    private function getContentsFromPath()
     {
         $filesystem = $this->filesystems->get($this->option('source'));
         return $filesystem->listContents($this->option('path'));
+    }
+
+    private function lineBreak()
+    {
+        $this->line(PHP_EOL);
     }
 } 
