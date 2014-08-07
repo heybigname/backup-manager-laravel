@@ -6,7 +6,7 @@ use BigName\BackupManager\Compressors;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\ServiceProvider;
 use BigName\BackupManager\Config\Config;
-use BigName\BackupManager\ShellProcessing\ShellProcessor;
+use BigName\BackupManager\Shell\ShellProcessor;
 
 class BackupManagerLaravelServiceProvider extends ServiceProvider
 {
@@ -97,7 +97,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
      */
     private function registerShellProcessor()
     {
-        $this->app->bind('BigName\BackupManager\ShellProcessing\ShellProcessor', function() {
+        $this->app->bind('BigName\BackupManager\Shell\ShellProcessor', function() {
             return new ShellProcessor(new Process('', null, null, null, null));
         });
     }
@@ -127,7 +127,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
             'BigName\BackupManager\Filesystems\FilesystemProvider',
             'BigName\BackupManager\Compressors\CompressorProvider',
             'BigName\BackupManager\Databases\DatabaseProvider',
-            'BigName\BackupManager\ShellProcessing\ShellProcessor',
+            'BigName\BackupManager\Shell\ShellProcessor',
         ];
     }
 
@@ -153,7 +153,7 @@ class BackupManagerLaravelServiceProvider extends ServiceProvider
             if (isset($connection['port']))
                 $port = $connection['port'];
             else
-                $port = $this->getStandardPortForDriver($connection['port']);
+                $port = $this->getStandardPortForDriver($connection['driver']);
 
             return [
                 'type' => $connection['driver'],

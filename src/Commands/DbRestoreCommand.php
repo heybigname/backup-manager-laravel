@@ -1,11 +1,12 @@
 <?php namespace BigName\BackupManagerLaravel\Commands;
 
+use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use BigName\BackupManager\Databases\DatabaseProvider;
 use BigName\BackupManager\Procedures\RestoreProcedure;
 use BigName\BackupManager\Filesystems\FilesystemProvider;
 
-class DbRestoreCommand extends BaseCommand
+class DbRestoreCommand extends Command
 {
     /**
      * The console command name.

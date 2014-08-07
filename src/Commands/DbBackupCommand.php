@@ -237,7 +237,7 @@ class DbBackupCommand extends Command
     private function confirmToProceed()
     {
         $confirmation = $this->confirm('Are these correct? [Y/n]');
-        if (!$confirmation)
+        if ( ! $confirmation)
             $this->reAskArguments();
     }
 }
